@@ -1,0 +1,7 @@
+*.bat text eol=crlf
+
+app/linux/** linguist-vendored
+app/macos/** linguist-vendored
+app/web/** linguist-vendored
+app/windows/** linguist-vendored
+
