@@ -1,5 +1,7 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:test_drive/constants.dart';
 import 'dart:io';
 import 'package:window_manager/window_manager.dart';
 import 'color_schemes.dart';
@@ -60,18 +62,50 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String _status = "Press the wave button to fetch the database resource";
+  String _response = "";
+  bool _responseVisible = false;
 
-  int _counter = 0;
+  String truncate(String text, { length = 7, omission = '...' }) {
+    if (length >= text.length) {
+      return text;
+    }
+    return text.replaceRange(length, text.length, omission);
+  }
 
-  void _incrementCounter() {
+  void _fetchDbResource() async { // Use async for HTTP requests
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _status = "Fetching resource...";
+      _responseVisible = false; // Hide response until ready
     });
+
+    try {
+      // Get APP_API from environment variables
+      var appApi = Platform.environment['APP_API'];
+
+      // Otherwise use default
+      appApi ??= defaultAppApiUrl;
+
+      final uri = Uri.parse('$appApi/sql-hello');
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _response = truncate(response.body, length: 50);
+          _status = "Response:";
+          _responseVisible = true; // Show the response now
+        });
+      } else {
+        setState(() {
+          _status = "Error: HTTP status code: ${response.statusCode}";
+        });
+      }
+    } catch (error) {
+      setState(() {
+        _status = "Failed to fetch database resource";
+        print(error);
+      });
+    }
   }
 
   @override
@@ -95,36 +129,54 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            // Column is also a layout widget. It takes a list of children and
+            // arranges them vertically. By default, it sizes itself to fit its
+            // children horizontally, and tries to be as tall as its parent.
+            //
+            // Column has various properties to control how it sizes itself and
+            // how it positions its children. Here we use mainAxisAlignment to
+            // center the children vertically; the main axis here is the vertical
+            // axis because Columns are vertical (the cross axis would be
+            // horizontal).
+            //
+            // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+            // action in the IDE, or press "p" in the console), to see the
+            // wireframe for each widget.
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              AnimatedContainer( // Wrap the status in an AnimatedContainer
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.only(bottom: _responseVisible ? 20 : 0),
+                child: Text(_status),
+              ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 100),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return ScaleTransition( // Use ScaleTransition
+                    scale: animation,
+                    child: child,
+                  );
+                },
+                child: _responseVisible
+                    ? Text(
+                  _response,
+                  key: ValueKey(_response), // Key helps with transition
+                  style: Theme.of(context).textTheme.headlineMedium,
+                )
+                    : const SizedBox.shrink(), // Empty placeholder when not visible
+              ),
+            ],
+          ),
         ),
+
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        onPressed: _fetchDbResource,
+        tooltip: 'Fetch database resource',
+        child: const Icon(Icons.waving_hand_outlined),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }

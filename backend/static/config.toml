@@ -1,0 +1,14 @@
+# Default configuration file
+
+# PostgreSQL database connection string
+postgres_connect_string = "postgres://username:password@host:port/database"
+
+# (Optional) What host or IP-address, and port to bind the HTTP API to
+# Follows the Go net/http Server.Addr format
+# Default value: "localhost:8080"
+#bind = "localhost:8080"
+
+# (Optional) Whether to enable debug logging or not
+# Can be also be enabled with the --debug or -d flag.
+# Default value: false
+#debug = false
