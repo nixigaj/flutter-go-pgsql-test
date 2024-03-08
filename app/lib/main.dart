@@ -91,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       if (response.statusCode == 200) {
         setState(() {
-          _response = truncate(response.body, length: 50);
+          _response = truncate(response.body, length: 100);
           _status = "Response:";
           _responseVisible = true; // Show the response now
         });

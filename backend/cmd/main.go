@@ -40,14 +40,16 @@ func main() {
 	log.SetTimeFormat(time.DateTime)
 
 	if args.Debug {
-		if args.Debug {
-			log.SetLevel(log.DebugLevel)
-		}
+		log.SetLevel(log.DebugLevel)
 	}
 
 	cfg, err := getConfig(*args.ConfigPath)
 	if err != nil {
 		log.Fatalf("Configuration error: %v", err)
+	}
+
+	if cfg.Debug {
+		log.SetLevel(log.DebugLevel)
 	}
 
 	sc := syncController{

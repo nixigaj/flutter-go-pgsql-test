@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"github.com/charmbracelet/log"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -21,17 +20,14 @@ func apiHandler(w http.ResponseWriter, r *http.Request, dbPool *pgxpool.Pool) {
 	}
 
 	if r.URL.Path == "/sql-hello" {
-		row := dbPool.QueryRow(context.Background(), "SELECT 'Hello, world!'")
-
-		var helloResp string
-		err := row.Scan(&helloResp)
+		countResp, err := incrementHello(dbPool)
 		if err != nil {
 			http.Error(w, "internal server error", http.StatusInternalServerError)
-			log.Errorf("Row scan fail: %v", err)
+			log.Errorf("Database error: %v", err)
 			return
 		}
 
-		_, err = fmt.Fprintf(w, "SQL response: %s", helloResp)
+		_, err = fmt.Fprintf(w, "SQL response: %s", countResp)
 		if err != nil {
 			log.Errorf("HTTP write: %v", err)
 			return
