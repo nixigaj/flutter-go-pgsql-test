@@ -14,6 +14,10 @@ func startDbPool(cfg *Config) (*pgxpool.Pool, error) {
 		return nil, fmt.Errorf("PostgreSQL config parsing error: %v", err)
 	}
 
+	if cfg.PgConnections > 0 {
+		pgCfg.MaxConns = cfg.PgConnections
+	}
+
 	pool, err := pgxpool.NewWithConfig(context.Background(), pgCfg)
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to PostgreSQL: %v", err)

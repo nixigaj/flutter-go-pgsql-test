@@ -8,6 +8,11 @@ postgres_connect_string = "postgres://username:password@host:port/database"
 # Default value: "localhost:8080"
 #bind = "localhost:8080"
 
+# (Optional) Number of paralell PostgreSQL connections
+# Set to 0 to mach number of CPUs on system
+# Default value: 0
+#postgres_parallel_connections = 0
+
 # (Optional) Whether to enable debug logging or not
 # Can be also be enabled with the --debug or -d flag.
 # Default value: false

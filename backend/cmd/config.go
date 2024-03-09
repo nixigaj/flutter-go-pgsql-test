@@ -9,9 +9,10 @@ import (
 )
 
 type Config struct {
-	PgConnStr string `toml:"postgres_connect_string"`
-	Bind      string `toml:"bind"`
-	Debug     bool   `toml:"debug"`
+	PgConnStr     string `toml:"postgres_connect_string"`
+	Bind          string `toml:"bind"`
+	PgConnections int32  `toml:"postgres_parallel_connections"`
+	Debug         bool   `toml:"debug"`
 }
 
 func getConfig(path string) (*Config, error) {
@@ -29,6 +30,10 @@ func getConfig(path string) (*Config, error) {
 
 	if cfg.Bind == "" {
 		cfg.Bind = "localhost:8080"
+	}
+
+	if cfg.PgConnections < 0 {
+		return nil, fmt.Errorf("negative number of paralell PostgreSQL connections: %d", cfg.PgConnections)
 	}
 
 	err = validateBind(cfg.Bind)
