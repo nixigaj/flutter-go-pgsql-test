@@ -69,19 +69,21 @@ func initAndValidateDb(pool *pgxpool.Pool) error {
 func incrementHello(pool *pgxpool.Pool) (string, error) {
 	startTime := time.Now()
 
-	_, err := pool.Exec(context.Background(), `UPDATE hello
-	                                           SET counter = counter + 1
-	                                           WHERE id = (SELECT MIN(id) FROM hello);`)
-	if err != nil {
-		return "", fmt.Errorf("exec fail: %v", err)
-	}
-
 	var id int
 	var counter int
 	var message string
-	err = pool.QueryRow(context.Background(), "SELECT * FROM hello WHERE id = (SELECT MIN(id) FROM hello)").Scan(&id, &counter, &message)
+
+	err := pool.QueryRow(context.Background(), `
+		WITH updated_hello AS (
+			UPDATE hello
+				SET counter = counter + 1
+				WHERE id = (SELECT MIN(id) FROM hello)
+				RETURNING *
+			)
+		SELECT id, counter, message FROM updated_hello
+	`).Scan(&id, &counter, &message)
 	if err != nil {
-		return "", fmt.Errorf("select fail: %v", err)
+		return "", fmt.Errorf("query fail: %v", err)
 	}
 
 	log.Debugf("Database increment counter latency: %dms", time.Since(startTime).Milliseconds())
