@@ -1,5 +1,9 @@
 .PHONY: copy-static build build-release run clean
 
+ifeq ($(shell uname -s),Linux)
+CGO_ENABLED := 0
+endif
+
 all: build
 
 copy-static:
@@ -9,10 +13,10 @@ copy-static:
 	fi
 
 build: copy-static
-	@go build -o build/backend cmd/*.go
+	@CGO_ENABLED=$(CGO_ENABLED) go build -o build/backend cmd/*.go
 
 build-release: copy-static
-	@go build --ldflags "-w -s" -o build/backend cmd/*.go
+	@CGO_ENABLED=$(CGO_ENABLED) go build --ldflags "-w -s" -o build/backend cmd/*.go
 
 run:
 	@cd build && ./backend && cd ..
